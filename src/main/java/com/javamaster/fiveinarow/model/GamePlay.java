@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class GamePlay {
-  private char moveSymbol;
+  private Symbol symbol;
   private int rowCoordinate;
   private int colCoordinate;
   private String gameId;
