@@ -7,6 +7,7 @@ import com.javamaster.fiveinarow.model.Game;
 import com.javamaster.fiveinarow.model.GameBoard;
 import com.javamaster.fiveinarow.model.GamePlay;
 import com.javamaster.fiveinarow.model.Player;
+import com.javamaster.fiveinarow.model.Symbol;
 import com.javamaster.fiveinarow.storage.GameStorage;
 
 import org.springframework.stereotype.Service;
@@ -125,16 +126,19 @@ public class GameService {
     boolean isWon = board.checkWinningMove(gamePlay.getRowCoordinate(), gamePlay.getColCoordinate());
 
     if (isWon) {
-      //TO DO: end game with win
-      GameStorage.getInstance().setGame(game);
-      return game;
+      if (gamePlay.getSymbol() == Symbol.X) {
+        game.setWinner(game.getPlayerX());
+      }
+      else {
+        game.setWinner(game.getPlayerO());
+      };
     }
-
-    if (board.isOutOfMoves()) {
-
+    else if (board.isOutOfMoves()) {
+      game.setWinner(null);
       //TO DO: end game without winner
     }
 
+    GameStorage.getInstance().setGame(game);
     return game;
   }
 }
