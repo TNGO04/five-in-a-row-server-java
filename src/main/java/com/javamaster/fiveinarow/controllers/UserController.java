@@ -27,7 +27,9 @@ public class UserController {
       user = service.createUser(user);
       return ResponseEntity.ok(user);
     }
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Username already exists");
+    else {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Username already exists");
+    }
   }
 
 

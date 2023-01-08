@@ -7,18 +7,16 @@ import com.javamaster.fiveinarow.models.Game;
 import com.javamaster.fiveinarow.models.GameBoard;
 import com.javamaster.fiveinarow.models.GamePlay;
 import com.javamaster.fiveinarow.models.GameStatus;
-import com.javamaster.fiveinarow.models.Player;
 import com.javamaster.fiveinarow.models.Symbol;
+import com.javamaster.fiveinarow.models.User;
 import com.javamaster.fiveinarow.repositories.GameRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 
@@ -39,7 +37,7 @@ public class GameService {
    * @param player  first player (X)
    * @return  game
    */
-  public Game createGame(Player player) {
+  public Game createGame(User player) {
     Game game = new Game();
 
     game.setBoard(new GameBoard());
@@ -57,7 +55,7 @@ public class GameService {
    * @throws InvalidParameterException no game with ID
    * @throws InvalidGameException game with ID is full
    */
-  public Game connectToGame(Player player2, String gameID) throws InvalidParameterException, InvalidGameException {
+  public Game connectToGame(User player2, String gameID) throws InvalidParameterException, InvalidGameException {
     Game game = gameRepository.findById(gameID).orElse(null);
 
     if (game == null) {
@@ -79,7 +77,7 @@ public class GameService {
    * @return  game
    * @throws GameNotFoundException  no game found
    */
-  public Game connectToRandomGame(Player player2) throws GameNotFoundException {
+  public Game connectToRandomGame(User player2) throws GameNotFoundException {
     // find list of new game and pick one randomly
     List<Game> randomList = gameRepository.findAll();
 

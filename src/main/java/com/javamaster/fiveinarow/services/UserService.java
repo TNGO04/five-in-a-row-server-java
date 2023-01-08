@@ -18,7 +18,13 @@ public class UserService {
   }
 
   public User verifyUser(User user) {
-    return userRepo.findByCredentials(user.getUsername(), user.getPassword());
+    User queried = userRepo.findByCredentials(user.getUsername(), user.getPassword());
+
+    // omit password
+    if (queried != null) {
+      queried.setPassword("");
+    }
+    return queried;
   }
 
   public User createUser(User user) {

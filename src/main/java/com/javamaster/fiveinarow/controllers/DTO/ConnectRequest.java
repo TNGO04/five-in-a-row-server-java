@@ -1,11 +1,11 @@
 package com.javamaster.fiveinarow.controllers.DTO;
 
-import com.javamaster.fiveinarow.models.Player;
+import com.javamaster.fiveinarow.models.User;
 
 import lombok.Data;
 
 @Data
 public class ConnectRequest {
-  private Player player;
+  private User user;
   private String gameId;
 }

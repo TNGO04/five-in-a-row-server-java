@@ -12,8 +12,8 @@ public class Game {
   @Id
   private String _id;
   private GameStatus status;
-  private Player playerX, playerO;
-  private Player winner;
+  private User playerX, playerO;
+  private User winner;
   private GameBoard board;
   public static int WIN_CONDITION = 5;
 }

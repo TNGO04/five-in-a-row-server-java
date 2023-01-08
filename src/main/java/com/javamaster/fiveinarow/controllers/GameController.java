@@ -6,7 +6,6 @@ import com.javamaster.fiveinarow.exceptions.InvalidGameException;
 import com.javamaster.fiveinarow.exceptions.InvalidParameterException;
 import com.javamaster.fiveinarow.models.Game;
 import com.javamaster.fiveinarow.models.GamePlay;
-import com.javamaster.fiveinarow.models.Player;
 import com.javamaster.fiveinarow.models.User;
 import com.javamaster.fiveinarow.services.GameService;
 import com.javamaster.fiveinarow.services.UserService;
@@ -41,10 +40,10 @@ public class GameController {
    * @return  response entity with game information
    */
   @PostMapping("/start")
-  public ResponseEntity<Game> start(@RequestBody Player player) {
-    log.info("Start game request by {}", player);
+  public ResponseEntity<Game> start(@RequestBody User user) {
+    log.info("Start game request by {}", user.getUsername());
     userService.createUser(new User());
-    return ResponseEntity.ok(gameService.createGame(player));
+    return ResponseEntity.ok(gameService.createGame(user));
   }
 
   /**
@@ -57,7 +56,7 @@ public class GameController {
   @PostMapping("/connect")
   public ResponseEntity<Game> connect(@RequestBody ConnectRequest request) throws InvalidGameException, InvalidParameterException {
     log.info("Connect request: {}", request);
-    return ResponseEntity.ok(gameService.connectToGame(request.getPlayer(), request.getGameId()));
+    return ResponseEntity.ok(gameService.connectToGame(request.getUser(), request.getGameId()));
   }
 
   /**
@@ -67,9 +66,9 @@ public class GameController {
    * @throws GameNotFoundException if no available game
    */
   @PostMapping("/connect/random")
-  public ResponseEntity<Game> connectRandom(@RequestBody Player player) throws GameNotFoundException {
-    log.info("Connect to random game by {}", player);
-    return ResponseEntity.ok(gameService.connectToRandomGame(player));
+  public ResponseEntity<Game> connectRandom(@RequestBody User user) throws GameNotFoundException {
+    log.info("Connect to random game by {}", user.getUsername());
+    return ResponseEntity.ok(gameService.connectToRandomGame(user));
   }
 
   /**
