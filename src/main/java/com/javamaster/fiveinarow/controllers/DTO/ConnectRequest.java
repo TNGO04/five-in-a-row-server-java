@@ -1,6 +1,6 @@
-package com.javamaster.fiveinarow.controller.DTO;
+package com.javamaster.fiveinarow.controllers.DTO;
 
-import com.javamaster.fiveinarow.model.Player;
+import com.javamaster.fiveinarow.models.Player;
 
 import lombok.Data;
 

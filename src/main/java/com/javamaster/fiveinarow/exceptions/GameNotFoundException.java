@@ -1,4 +1,4 @@
-package com.javamaster.fiveinarow.exception;
+package com.javamaster.fiveinarow.exceptions;
 
 public class GameNotFoundException extends Exception {
   private String message;

@@ -1,4 +1,4 @@
-package com.javamaster.fiveinarow.model;
+package com.javamaster.fiveinarow.models;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import lombok.Data;
 public class GameBoard{
   public static final int MINDIM = 5, MAXDIM = 99;
 
-  private final int boardDimension; //number of columns/rows of board
+  private static final int boardDimension = 20; //number of columns/rows of board
   private Symbol[][] board;
   private int nMoves;
 
@@ -16,14 +16,8 @@ public class GameBoard{
    * @param boardDimension boardDimension of board (height/width)
    * @throws IllegalArgumentException if boardDimension is not within range
    */
-  public GameBoard(int boardDimension) throws IllegalArgumentException {
-    if (boardDimension < MINDIM) {
-      throw new IllegalArgumentException("BoardDimension input is below minimum");
-    } else if (boardDimension > MAXDIM) {
-      throw new IllegalArgumentException("BoardDimension input exceeds maximum");
-    }
+  public GameBoard() throws IllegalArgumentException {
     this.nMoves = 0;
-    this.boardDimension = boardDimension;
     this.board = new Symbol[boardDimension][boardDimension];
     this.initializeBoard();
   }
@@ -39,13 +33,17 @@ public class GameBoard{
     }
   }
 
+  private int getBoardDimension() {
+    return boardDimension;
+  }
+
   /**
    * Copy constructor.
    *
    * @param other GameBoard object to be copied
    */
   public GameBoard(GameBoard other) throws IllegalArgumentException {
-    this(other.getBoardDimension());
+    this();
     for (int i = 0; i < other.getBoardDimension(); i++) {
       this.board[i] = other.board[i].clone();
     }

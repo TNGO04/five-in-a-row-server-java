@@ -1,13 +1,15 @@
-package com.javamaster.fiveinarow.controller;
+package com.javamaster.fiveinarow.controllers;
 
-import com.javamaster.fiveinarow.controller.DTO.ConnectRequest;
-import com.javamaster.fiveinarow.exception.GameNotFoundException;
-import com.javamaster.fiveinarow.exception.InvalidGameException;
-import com.javamaster.fiveinarow.exception.InvalidParameterException;
-import com.javamaster.fiveinarow.model.Game;
-import com.javamaster.fiveinarow.model.GamePlay;
-import com.javamaster.fiveinarow.model.Player;
-import com.javamaster.fiveinarow.service.GameService;
+import com.javamaster.fiveinarow.controllers.DTO.ConnectRequest;
+import com.javamaster.fiveinarow.exceptions.GameNotFoundException;
+import com.javamaster.fiveinarow.exceptions.InvalidGameException;
+import com.javamaster.fiveinarow.exceptions.InvalidParameterException;
+import com.javamaster.fiveinarow.models.Game;
+import com.javamaster.fiveinarow.models.GamePlay;
+import com.javamaster.fiveinarow.models.Player;
+import com.javamaster.fiveinarow.models.User;
+import com.javamaster.fiveinarow.services.GameService;
+import com.javamaster.fiveinarow.services.UserService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -30,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GameController {
 
   private final GameService gameService;
+  private final UserService userService;
   private final SimpMessagingTemplate simpMessagingTemplate;
 
   /**
@@ -40,6 +43,7 @@ public class GameController {
   @PostMapping("/start")
   public ResponseEntity<Game> start(@RequestBody Player player) {
     log.info("Start game request by {}", player);
+    userService.createUser(new User());
     return ResponseEntity.ok(gameService.createGame(player));
   }
 
@@ -79,7 +83,7 @@ public class GameController {
   public ResponseEntity<Game> gamePlay(@RequestBody GamePlay request) throws GameNotFoundException, InvalidGameException {
     log.info("Gameplay: {}", request);
     Game game = gameService.gamePlay(request);
-    simpMessagingTemplate.convertAndSend("/topic/game-progress/" + game.getGameId(), game);
+    simpMessagingTemplate.convertAndSend("/topic/game-progress/" + game.get_id(), game);
     return ResponseEntity.ok(game);
   }
 }

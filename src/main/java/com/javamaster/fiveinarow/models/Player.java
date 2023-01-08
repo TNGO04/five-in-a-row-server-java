@@ -1,4 +1,4 @@
-package com.javamaster.fiveinarow.model;
+package com.javamaster.fiveinarow.models;
 
 import lombok.Data;
 
