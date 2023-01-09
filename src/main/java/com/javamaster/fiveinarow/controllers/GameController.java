@@ -10,6 +10,7 @@ import com.javamaster.fiveinarow.models.User;
 import com.javamaster.fiveinarow.services.GameService;
 import com.javamaster.fiveinarow.services.UserService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,9 +55,17 @@ public class GameController {
    * @throws InvalidParameterException if game is full
    */
   @PostMapping("/connect")
-  public ResponseEntity<Game> connect(@RequestBody ConnectRequest request) throws InvalidGameException, InvalidParameterException {
-    log.info("Connect request: {}", request);
-    return ResponseEntity.ok(gameService.connectToGame(request.getUser(), request.getGameId()));
+  public ResponseEntity connect(@RequestBody ConnectRequest request) throws InvalidGameException, GameNotFoundException {
+    try {
+      log.info("Connect request: {}", request);
+      return ResponseEntity.ok(gameService.connectToGame(request.getUser(), request.getGameId()));
+    }
+    catch (GameNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game with ID not found");
+    }
+    catch (InvalidGameException e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Game not eligible to connect");
+    }
   }
 
   /**
@@ -66,9 +75,14 @@ public class GameController {
    * @throws GameNotFoundException if no available game
    */
   @PostMapping("/connect/random")
-  public ResponseEntity<Game> connectRandom(@RequestBody User user) throws GameNotFoundException {
-    log.info("Connect to random game by {}", user.getUsername());
-    return ResponseEntity.ok(gameService.connectToRandomGame(user));
+  public ResponseEntity connectRandom(@RequestBody User user) throws GameNotFoundException {
+    try {
+      log.info("Connect to random game by {}", user.getUsername());
+      return ResponseEntity.ok(gameService.connectToRandomGame(user));
+    }
+    catch (GameNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No game available to connect");
+    }
   }
 
   /**
@@ -79,10 +93,20 @@ public class GameController {
    * @throws InvalidGameException
    */
   @PostMapping("/gameplay")
-  public ResponseEntity<Game> gamePlay(@RequestBody GamePlay request) throws GameNotFoundException, InvalidGameException {
-    log.info("Gameplay: {}", request);
-    Game game = gameService.gamePlay(request);
-    simpMessagingTemplate.convertAndSend("/topic/game-progress/" + game.get_id(), game);
-    return ResponseEntity.ok(game);
+  public ResponseEntity gamePlay(@RequestBody GamePlay request) throws GameNotFoundException, InvalidGameException {
+    try {
+      log.info("Gameplay: {}", request);
+      Game game = gameService.gamePlay(request);
+      simpMessagingTemplate.convertAndSend("/topic/game-progress/" + game.get_id(), game);
+      return ResponseEntity.ok(game);
+    }
+    catch (InvalidGameException e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Game with ID not found");
+    }
+    catch (GameNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game is not in progress");
+    }
+
+
   }
 }

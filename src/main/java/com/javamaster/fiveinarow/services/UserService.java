@@ -17,8 +17,8 @@ public class UserService {
     return userRepo.findByUsername(username);
   }
 
-  public User verifyUser(User user) {
-    User queried = userRepo.findByCredentials(user.getUsername(), user.getPassword());
+  public User verifyUser(String username, String password) {
+    User queried = userRepo.findByCredentials(username, password);
 
     // omit password
     if (queried != null) {

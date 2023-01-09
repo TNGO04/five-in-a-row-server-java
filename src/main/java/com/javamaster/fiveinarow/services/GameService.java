@@ -55,11 +55,11 @@ public class GameService {
    * @throws InvalidParameterException no game with ID
    * @throws InvalidGameException game with ID is full
    */
-  public Game connectToGame(User player2, String gameID) throws InvalidParameterException, InvalidGameException {
+  public Game connectToGame(User player2, String gameID) throws GameNotFoundException, InvalidGameException {
     Game game = gameRepository.findById(gameID).orElse(null);
 
     if (game == null) {
-      throw new InvalidParameterException("No game exists with this ID");
+      throw new GameNotFoundException("No game exists with this ID");
     }
 
     if (game.getPlayerO() != null) {

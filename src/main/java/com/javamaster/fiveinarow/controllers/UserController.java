@@ -1,5 +1,6 @@
 package com.javamaster.fiveinarow.controllers;
 
+import com.javamaster.fiveinarow.controllers.DTO.CredentialRequest;
 import com.javamaster.fiveinarow.models.User;
 import com.javamaster.fiveinarow.services.UserService;
 
@@ -20,12 +21,14 @@ public class UserController {
   private UserService service;
 
   @PostMapping("/register")
-  public ResponseEntity register(@RequestBody User user) {
-    User existingUser = service.getUserByUsername(user.getUsername());
-
+  public ResponseEntity register(@RequestBody CredentialRequest credentials) {
+    User existingUser = service.getUserByUsername(credentials.getUsername());
+    User newUser = new User();
     if (existingUser == null) {
-      user = service.createUser(user);
-      return ResponseEntity.ok(user);
+      newUser.setPassword(credentials.getPassword());
+      newUser.setUsername(credentials.getUsername());
+      newUser = service.createUser(newUser);
+      return ResponseEntity.ok(newUser);
     }
     else {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Username already exists");
@@ -34,12 +37,12 @@ public class UserController {
 
 
   @PostMapping("/login")
-  public ResponseEntity login(@RequestBody User user) {
-    User existingUser = service.verifyUser(user);
+  public ResponseEntity login(@RequestBody CredentialRequest credentials) {
+    User existingUser = service.verifyUser(credentials.getUsername(), credentials.getPassword());
 
     if (existingUser != null) {
       return ResponseEntity.ok(existingUser);
     }
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Credentials not found.");
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Credentials not found.");
   }
 }
