@@ -9,6 +9,7 @@ public class GameBoard{
   private static final int boardDimension = 20; //number of columns/rows of board
   private Symbol[][] board;
   private int nMoves;
+  public static final Symbol starting = Symbol.X;
 
   /**
    * Constructor for GameBoard.

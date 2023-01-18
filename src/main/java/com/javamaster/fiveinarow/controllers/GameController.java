@@ -3,6 +3,7 @@ package com.javamaster.fiveinarow.controllers;
 import com.javamaster.fiveinarow.controllers.DTO.ConnectRequest;
 import com.javamaster.fiveinarow.exceptions.GameNotFoundException;
 import com.javamaster.fiveinarow.exceptions.InvalidGameException;
+import com.javamaster.fiveinarow.exceptions.InvalidMoveException;
 import com.javamaster.fiveinarow.exceptions.InvalidParameterException;
 import com.javamaster.fiveinarow.models.Game;
 import com.javamaster.fiveinarow.models.GamePlay;
@@ -106,13 +107,8 @@ public class GameController {
       simpMessagingTemplate.convertAndSend("/topic/game-progress/" + game.get_id(), game);
       return ResponseEntity.ok(game);
     }
-    catch (InvalidGameException e) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Game with ID not found");
+    catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
-    catch (GameNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game is not in progress");
-    }
-
-
   }
 }

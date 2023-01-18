@@ -2,6 +2,7 @@ package com.javamaster.fiveinarow.services;
 
 import com.javamaster.fiveinarow.exceptions.GameNotFoundException;
 import com.javamaster.fiveinarow.exceptions.InvalidGameException;
+import com.javamaster.fiveinarow.exceptions.InvalidMoveException;
 import com.javamaster.fiveinarow.exceptions.InvalidParameterException;
 import com.javamaster.fiveinarow.models.Game;
 import com.javamaster.fiveinarow.models.GameBoard;
@@ -103,7 +104,7 @@ public class GameService {
    * @throws GameNotFoundException game not found
    * @throws InvalidGameException game is either not started or already finished
    */
-  public Game gamePlay(GamePlay gamePlay) throws GameNotFoundException, InvalidGameException {
+  public Game gamePlay(GamePlay gamePlay) throws GameNotFoundException, InvalidGameException, InvalidMoveException {
     Game game = gameRepository.findById(gamePlay.getGameId()).orElse(null);
 
     if (game == null) {
@@ -111,11 +112,20 @@ public class GameService {
     }
 
     if (!game.getStatus().equals(IN_PROGRESS)) {
-      throw new InvalidGameException("Cannot add move to game not in progress.");
+      throw new InvalidGameException("Game has not been started yet.");
     }
 
     GameBoard board = game.getBoard();
-    board.addMove(gamePlay.getRowCoordinate(),gamePlay.getColCoordinate(),gamePlay.getSymbol());
+    if (((board.getNMoves() % 2 == 0) && (gamePlay.getSymbol() != GameBoard.starting))
+    || ((board.getNMoves() % 2 == 1) && (gamePlay.getSymbol() == GameBoard.starting))) {
+      throw new InvalidMoveException("Currently not your turn.");
+    }
+
+    if (!board.addMove(gamePlay.getRowCoordinate(),gamePlay.getColCoordinate(),gamePlay.getSymbol())) {
+      throw new InvalidMoveException("Move is not legal");
+    }
+
+
     boolean isWon = board.checkWinningMove(gamePlay.getRowCoordinate(), gamePlay.getColCoordinate());
 
     if (isWon) {
