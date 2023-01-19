@@ -1,7 +1,7 @@
 package com.javamaster.fiveinarow.controllers;
 
 import com.javamaster.fiveinarow.controllers.DTO.CredentialRequest;
-import com.javamaster.fiveinarow.models.User;
+import com.javamaster.fiveinarow.models.user.User;
 import com.javamaster.fiveinarow.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;

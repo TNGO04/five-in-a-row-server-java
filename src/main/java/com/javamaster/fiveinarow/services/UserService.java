@@ -1,12 +1,10 @@
 package com.javamaster.fiveinarow.services;
 
-import com.javamaster.fiveinarow.models.User;
+import com.javamaster.fiveinarow.models.user.User;
 import com.javamaster.fiveinarow.repositories.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class UserService {

@@ -1,6 +1,6 @@
 package com.javamaster.fiveinarow.controllers.DTO;
 
-import com.javamaster.fiveinarow.models.User;
+import com.javamaster.fiveinarow.models.user.User;
 
 import lombok.Data;
 

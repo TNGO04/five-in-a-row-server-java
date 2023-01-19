@@ -3,24 +3,22 @@ package com.javamaster.fiveinarow.controllers;
 import com.javamaster.fiveinarow.controllers.DTO.ConnectRequest;
 import com.javamaster.fiveinarow.exceptions.GameNotFoundException;
 import com.javamaster.fiveinarow.exceptions.InvalidGameException;
-import com.javamaster.fiveinarow.exceptions.InvalidMoveException;
 import com.javamaster.fiveinarow.exceptions.InvalidParameterException;
 import com.javamaster.fiveinarow.models.Game;
 import com.javamaster.fiveinarow.models.GamePlay;
-import com.javamaster.fiveinarow.models.User;
+import com.javamaster.fiveinarow.models.user.User;
 import com.javamaster.fiveinarow.services.GameService;
 import com.javamaster.fiveinarow.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
@@ -30,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
-
 /**
  * GameController handles HTTP request
  */
@@ -43,7 +40,6 @@ public class GameController {
 
   /**
    * Handle game start through POST request.
-   * @param player  player, parsed from body of request
    * @return  response entity with game information
    */
   @PostMapping("/game/start")
@@ -77,7 +73,6 @@ public class GameController {
 
   /**
    * Connect to random game.
-   * @param player  player current trying to connect
    * @return  random game player is connected to
    * @throws GameNotFoundException if no available game
    */
@@ -88,6 +83,22 @@ public class GameController {
       return ResponseEntity.ok(gameService.connectToRandomGame(user));
     }
     catch (GameNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No game available to connect");
+    }
+  }
+
+  /**
+   * Connect to a game with AI
+   */
+  @PostMapping("/game/connect/computer")
+  public ResponseEntity connectToAIGame(@RequestBody User user) throws GameNotFoundException {
+    try {
+      log.info("Connect to game with AI by {}", user.getUsername());
+      Game game = gameService.connectToAIGame(user);
+      simpMessagingTemplate.convertAndSend("/topic/game-progress/" + game.get_id(), game);
+      return ResponseEntity.ok(game);
+    }
+    catch (Exception e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No game available to connect");
     }
   }
@@ -108,6 +119,18 @@ public class GameController {
       return ResponseEntity.ok(game);
     }
     catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+  }
+
+  @GetMapping("/game/gameplay/computer")
+  public ResponseEntity gamePlayComputer(@RequestParam("id") String gameId) throws GameNotFoundException {
+    try {
+      log.info("AI Gameplay requested for {}", gameId);
+      Game game = gameService.makeAIMove(gameId);
+      simpMessagingTemplate.convertAndSend("/topic/game-progress/" + game.get_id(), game);
+      return ResponseEntity.ok(game);
+    } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
   }

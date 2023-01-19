@@ -1,10 +1,9 @@
 package com.javamaster.fiveinarow.repositories;
 
-import com.javamaster.fiveinarow.models.User;
+import com.javamaster.fiveinarow.models.user.User;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.stereotype.Repository;
 
 @Repository

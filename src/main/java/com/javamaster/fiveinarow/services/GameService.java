@@ -4,12 +4,14 @@ import com.javamaster.fiveinarow.exceptions.GameNotFoundException;
 import com.javamaster.fiveinarow.exceptions.InvalidGameException;
 import com.javamaster.fiveinarow.exceptions.InvalidMoveException;
 import com.javamaster.fiveinarow.exceptions.InvalidParameterException;
+import com.javamaster.fiveinarow.models.AI.MinimaxAI;
 import com.javamaster.fiveinarow.models.Game;
-import com.javamaster.fiveinarow.models.GameBoard;
+import com.javamaster.fiveinarow.models.board.GameBoard;
 import com.javamaster.fiveinarow.models.GamePlay;
 import com.javamaster.fiveinarow.models.GameStatus;
 import com.javamaster.fiveinarow.models.Symbol;
-import com.javamaster.fiveinarow.models.User;
+import com.javamaster.fiveinarow.models.user.AIPlayer;
+import com.javamaster.fiveinarow.models.user.User;
 import com.javamaster.fiveinarow.repositories.GameRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,9 @@ public class GameService {
   @Autowired
   private GameRepository gameRepository;
   private final static int DIMENSION = 20;
+  private final static Symbol AIplayer = Symbol.X;
+  private final static Symbol humanPlayer = Symbol.O;
+  private final static MinimaxAI ai = new MinimaxAI(AIplayer, humanPlayer);
     /**
    * Create a PvP game with first player.
    * @param player  first player (X)
@@ -97,6 +102,23 @@ public class GameService {
     return gameRepository.save(game);
   }
 
+
+  /**
+   *
+   * @param user
+   * @return
+   */
+  public Game connectToAIGame(User user) throws InvalidGameException, GameNotFoundException {
+    if (AIPlayer.getInstance() == null) {
+      AIPlayer.createInstance();
+    }
+    User AIuser = AIPlayer.getInstance();
+    Game game = createGame(AIuser);
+    game.setPlayerO(user);
+    game.setStatus(IN_PROGRESS);
+    return gameRepository.save(game);
+  }
+
   /**
    * Execute a gameplay.
    * @param gamePlay  game play
@@ -124,11 +146,16 @@ public class GameService {
     if (!board.addMove(gamePlay.getRowCoordinate(),gamePlay.getColCoordinate(),gamePlay.getSymbol())) {
       throw new InvalidMoveException("Move is not legal");
     }
+    game = checkWinningMove(game, gamePlay);
+    return gameRepository.save(game);
+  }
 
-
-    boolean isWon = board.checkWinningMove(gamePlay.getRowCoordinate(), gamePlay.getColCoordinate());
-
+  public Game checkWinningMove(Game game, GamePlay gamePlay) {
+    boolean isWon = game.getBoard().checkWinningMove(gamePlay.getRowCoordinate(), gamePlay.getColCoordinate());
     if (isWon) {
+      if (game.getWinner() != null) {
+        return game;
+      }
       if (gamePlay.getSymbol() == Symbol.X) {
         game.setWinner(game.getPlayerX());
       }
@@ -137,12 +164,36 @@ public class GameService {
       };
       game.setStatus(GameStatus.FINISHED);
     }
-    else if (board.isOutOfMoves()) {
+    else if (game.getBoard().isOutOfMoves()) {
       game.setWinner(null);
       game.setStatus(GameStatus.FINISHED);
-      //TO DO: end game without winner
+    }
+    return game;
+  }
+
+  public Game makeAIMove(String gameId) throws GameNotFoundException {
+    Game game = gameRepository.findById(gameId).orElse(null);
+
+    if (game == null) {
+      throw new GameNotFoundException("No game exists with this ID");
     }
 
+    int[] currMove = new int[0];
+    if (game.getBoard().getNMoves() == 0) {
+      currMove = ai.getOptimalMove(game.getBoard(), null, true);
+    } else {
+      currMove = ai.getOptimalMove(game.getBoard(), currMove, false);
+    }
+
+    game.getBoard().addMove(currMove[0], currMove[1], AIplayer);
+
+    GamePlay optimalPlay = new GamePlay();
+    optimalPlay.setRowCoordinate(currMove[0]);
+    optimalPlay.setColCoordinate(currMove[1]);
+    optimalPlay.setSymbol(AIplayer);
+
+    game = checkWinningMove(game, optimalPlay);
     return gameRepository.save(game);
   }
+
 }
