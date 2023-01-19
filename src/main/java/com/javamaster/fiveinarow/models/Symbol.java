@@ -1,5 +1,7 @@
 package com.javamaster.fiveinarow.models;
 
+import org.springframework.context.annotation.Bean;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -1,4 +1,8 @@
-package com.javamaster.fiveinarow.models;
+package com.javamaster.fiveinarow.models.board;
+
+import com.javamaster.fiveinarow.models.Game;
+import com.javamaster.fiveinarow.models.Symbol;
+import com.javamaster.fiveinarow.models.streak.StreakList;
 
 import lombok.Data;
 
@@ -10,6 +14,8 @@ public class GameBoard{
   private Symbol[][] board;
   private int nMoves;
   public static final Symbol starting = Symbol.X;
+  private Integer lastMoveRow;
+  private Integer lastMoveCol;
 
   /**
    * Constructor for GameBoard.
@@ -21,6 +27,8 @@ public class GameBoard{
     this.nMoves = 0;
     this.board = new Symbol[boardDimension][boardDimension];
     this.initializeBoard();
+    this.lastMoveRow = null;
+    this.lastMoveCol = null;
   }
 
   /**
@@ -34,7 +42,7 @@ public class GameBoard{
     }
   }
 
-  private int getBoardDimension() {
+  public int getBoardDimension() {
     return boardDimension;
   }
 
@@ -128,6 +136,8 @@ public class GameBoard{
     // if move is legal, add symbol to board
     if (this.isLegalMove(row, col)) {
       this.board[row][col] = symbol;
+      this.lastMoveRow = row;
+      this.lastMoveCol = col;
       nMoves++;
       return true;
     } else {
@@ -419,11 +429,114 @@ public class GameBoard{
     return newBoard;
   }
 
-  @Data
+  /**
+   * Given an array and a symbol, count the maximum amount of time the symbol appears consecutively.
+   * This function ignores streaks that are blocked on both sides. A streak is blocked on one side
+   * if it is impossible to expand the streak on that side.
+   * e.g: XXXO__OXXXO_XXX:
+   * first cluster of XXX: blocked both sides
+   * second cluster of XXX: blocked both sides
+   * third cluster of XXX:  blocked on the right
+
+   * e.g.: _XXX_OXXX_OXXX -> maxStreakSize = 3, streakCount = 2, unblockedCount = 1
+   * first cluster: unblocked both sides
+   * second cluster: counted in streakCount because blocked only on one side
+   * third cluster: not counted in streakCount because blocked on both sides
+   *
+   * @param array  array to be searched
+   * @param symbol symbol to be searched
+   * @return max number of time the symbol appears consecutively
+   */
+  public StreakList countConsecutive(Symbol[] array, char symbol) {
+    int arrayLength = array.length;
+    // initialize max streak size, and count of the number of streaks in array that is of that size
+    StreakList list = new StreakList();
+
+    // initialize streak marker, block marker, and streak counter
+    int blockMarker = 0, maxStreak = 0;
+    boolean inStreak = false;
+
+    // loop through elements of array and detect streak
+    for (int i = 0; i < arrayLength; i++) {
+      // if symbol found, start count and turn streak tracker to true
+      if (array[i].getCharacter() == symbol) {
+        maxStreak++;
+        if (!inStreak) {
+          inStreak = true;
+          /* if streak is at the start or end of the array, or preceding character is not EMPTY,
+           increase block marker*/
+          if ((i == 0) || (array[i - 1].getCharacter() != Symbol.EMPTY.getCharacter())) {
+            blockMarker++;
+          }
+        }
+      } else {
+        // if streak is broken
+        if (inStreak) {
+          inStreak = false;
+          // if streaked is terminated not by an EMPTY symbol, increase block marker
+          if (array[i].getCharacter() != Symbol.EMPTY.getCharacter()) {
+            blockMarker++;
+          }
+          list.addStreak(maxStreak, blockMarker); // update list
+          blockMarker = 0;
+          maxStreak = 0;
+        }
+      }
+    }
+    // Since there could be a streak at the end of array, run a check one last time
+    if (inStreak) {
+      blockMarker++;
+      list.addStreak(maxStreak, blockMarker);
+    }
+    return list;
+  }
+
+  /**
+   * Scan the board to check for streaks.
+   *
+   * @return StreakList object representing all valid streaks found on the board
+   */
+  public StreakList checkBoardForStreaks(Symbol player) {
+    char symbol = player.getCharacter();
+    int dimension = this.getBoardDimension();
+    StreakList list = new StreakList();
+
+    // check each row for streak
+    for (int row = 0; row < dimension; row++) {
+      list.addStreakList(this.countConsecutive(this.getRow(row), symbol));
+    }
+
+    // check each column for streak
+    for (int col = 0; col < dimension; col++) {
+      list.addStreakList(this.countConsecutive(this.getColumn(col), symbol));
+    }
+
+    // check diagonals for streaks
+    for (int row = Game.WIN_CONDITION - 1, col = 0; row < dimension; row++) {
+      list.addStreakList(this.countConsecutive(
+              this.getDiagonal(row, col, col, row), symbol));
+    }
+    for (int col = 1, row = dimension - 1; col <= (dimension - Game.WIN_CONDITION); col++) {
+      list.addStreakList(this.countConsecutive(
+              this.getDiagonal(row, col, col, row), symbol));
+    }
+    for (int col = Game.WIN_CONDITION - 1, row = dimension - 1; col < dimension; col++) {
+      list.addStreakList(this.countConsecutive(
+              this.getDiagonal(row, col, row - col, 0), symbol));
+    }
+    for (int row = dimension - 2, col = this.getBoardDimension() - 1;
+         row >= (Game.WIN_CONDITION - 1); row--) {
+      list.addStreakList(this.countConsecutive(
+              this.getDiagonal(row, col, 0, col - row), symbol));
+    }
+    return list;
+  }
+
+@Data
   /**
    * BoardSubset stores row and column indexes that describe a portion of the board.
    */
-  private class BoardSubset {
+  public class BoardSubset {
     private final int topRow;
     private final int botRow;
     private final int leftCol;
