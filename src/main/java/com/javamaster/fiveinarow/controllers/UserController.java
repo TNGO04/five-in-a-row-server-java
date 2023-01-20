@@ -21,7 +21,11 @@ public class UserController {
   private UserService service;
 
   @PostMapping("/register")
-  public ResponseEntity register(@RequestBody CredentialRequest credentials) {
+  public ResponseEntity register(@RequestBody CredentialRequest credentials){
+    if ((credentials.getPassword() == "") || (credentials.getUsername() == "")) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+              .body("Username or password cannot be empty.");
+    }
     User existingUser = service.getUserByUsername(credentials.getUsername());
     User newUser = new User();
     if (existingUser == null) {

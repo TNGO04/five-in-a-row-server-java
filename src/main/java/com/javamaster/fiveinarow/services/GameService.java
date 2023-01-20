@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 
+import static com.javamaster.fiveinarow.models.GameStatus.FINISHED;
 import static com.javamaster.fiveinarow.models.GameStatus.IN_PROGRESS;
 import static com.javamaster.fiveinarow.models.GameStatus.NEW;
 
@@ -133,8 +134,12 @@ public class GameService {
       throw new GameNotFoundException("No game exists with this ID");
     }
 
-    if (!game.getStatus().equals(IN_PROGRESS)) {
-      throw new InvalidGameException("Game has not been started yet.");
+    if (game.getStatus().equals(NEW)) {
+      throw new InvalidGameException("Game has not started yet.");
+    }
+
+    if (game.getStatus().equals(FINISHED)) {
+      throw new InvalidGameException("Game has finished.");
     }
 
     GameBoard board = game.getBoard();
@@ -153,9 +158,6 @@ public class GameService {
   public Game checkWinningMove(Game game, GamePlay gamePlay) {
     boolean isWon = game.getBoard().checkWinningMove(gamePlay.getRowCoordinate(), gamePlay.getColCoordinate());
     if (isWon) {
-      if (game.getWinner() != null) {
-        return game;
-      }
       if (gamePlay.getSymbol() == Symbol.X) {
         game.setWinner(game.getPlayerX());
       }
@@ -182,7 +184,13 @@ public class GameService {
     if (game.getBoard().getNMoves() == 0) {
       currMove = ai.getOptimalMove(game.getBoard(), null, true);
     } else {
-      currMove = ai.getOptimalMove(game.getBoard(), currMove, false);
+      if (game.getBoard().getNMoves() % 2 == 0) {
+        currMove = ai.getOptimalMove(game.getBoard(), currMove, false);
+      }
+      else {
+        return game;
+      }
+
     }
 
     game.getBoard().addMove(currMove[0], currMove[1], AIplayer);
