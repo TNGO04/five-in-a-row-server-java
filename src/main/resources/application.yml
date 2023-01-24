@@ -1,0 +1,6 @@
+server:
+  port: 5000
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://username:my_password@cluster0.apdp2yo.mongodb.net/five-in-a-row

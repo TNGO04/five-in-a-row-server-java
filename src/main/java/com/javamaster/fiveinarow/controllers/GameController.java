@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://d2rhazkk8xgu7j.cloudfront.net")
 /**
  * GameController handles HTTP request
  */
